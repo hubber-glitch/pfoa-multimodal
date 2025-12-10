@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PFAS: Forever Chemicals – Interactive Overview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050712;
+      color: #222;
+      overflow-x: hidden;
+    }
+
+    /* Progress bar */
+    .progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      z-index: 1200;
+      background: transparent;
+    }
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #4f46e5, #a855f7);
+      transition: width 0.08s linear;
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      padding: 80px 20px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: radial-gradient(circle at top left, #4f46e5 0, #1f2937 40%, #020617 75%);
+      color: #f9fafb;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-title {
+      font-size: clamp(2.8rem, 6vw, 4.8rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      margin-bottom: 10px;
+      text-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      animation: fadeUp 0.8s ease-out;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+      opacity: 0.9;
+      max-width: 680px;
+      margin-bottom: 18px;
+      animation: fadeUp 1s ease-out;
+    }
+
+    .hero-meta {
+      font-size: 0.9rem;
+      opacity: 0.7;
+      margin-bottom: 28px;
+      animation: fadeUp 1.2s ease-out;
+    }
+
+    .pill-row {
+      display: inline-flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .pill {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(248, 250, 252, 0.2);
+      font-size: 0.85rem;
+      backdrop-filter: blur(12px);
+      background: rgba(15, 23, 42, 0.7);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill span {
+      font-weight: 600;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+
+    .btn-primary,
+    .btn-soft {
+      border-radius: 999px;
+      padding: 10px 22px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5, #a855f7);
+      color: #f9fafb;
+      box-shadow: 0 12px 35px rgba(79, 70, 229, 0.6);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 45px rgba(79, 70, 229, 0.8);
+    }
+
+    .btn-soft {
+      background: rgba(15, 23, 42, 0.8);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .btn-soft:hover {
+      background: rgba(15, 23, 42, 0.9);
+      transform: translateY(-1px);
+    }
+
+    /* Mode toggle */
+    .mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      font-size: 0.82rem;
+      color: #e5e7eb;
+      backdrop-filter: blur(12px);
+    }
+
+    .mode-label {
+      opacity: 0.85;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 56px;
+      height: 28px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider-toggle {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: rgba(30, 64, 175, 0.9);
+      cursor: pointer;
+      transition: background 0.25s ease;
+    }
+
+    .slider-toggle::before {
+      content: "Basic";
+      position: absolute;
+      width: 32px;
+      height: 22px;
+      border-radius: 999px;
+      background: #f9fafb;
+      color: #1d4ed8;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      left: 4px;
+      top: 3px;
+      transition: transform 0.25s ease, color 0.25s ease, background 0.25s ease;
+      font-weight: 700;
+    } 
+
+    .switch input:checked + .slider-toggle {
+      background: rgba(88, 28, 135, 0.9);
+    }
+
+    .switch input:checked + .slider-toggle::before {
+      transform: translateX(18px);
+      content: "Deep";
+      color: #7c2d12;
+      background: #fef3c7;
+    }
+
+    .mode-note {
+      opacity: 0.7;
+    }
+
+    .hero-orbit {
+      position: absolute;
+      inset: -160px;
+      background: radial-gradient(circle at 10% 20%, rgba(96, 165, 250, 0.25), transparent 55%),
+                  radial-gradient(circle at 80% 10%, rgba(244, 114, 182, 0.22), transparent 55%),
+                  radial-gradient(circle at 80% 90%, rgba(52, 211, 153, 0.16), transparent 55%);
+      opacity: 0.7;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.6rem;
+      cursor: pointer;
+      opacity: 0.8;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translate(-50%, 0);
+      }
+      40% {
+        transform: translate(-50%, -12px);
+      }
+      60% {
+        transform: translate(-50%, -6px);
+      }
+    }
+
+    /* Nav */
+    nav {
+      position: fixed;
+      top: -80px;
+      left: 0;
+      right: 0;
+      z-index: 1100;
+      background: rgba(248, 250, 252, 0.97);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+      transition: top 0.35s ease;
+    }
+
+    nav.visible {
+      top: 4px;
+    }
+
+    nav ul {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      list-style: none;
+      justify-content: center;
+    }
+
+    nav a {
+      text-decoration: none;
+      font-size: 0.82rem;
+      padding: 6px 12px;
+      border-radius: 999px;
+      color: #4b5563;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+
+    nav a:hover {
+      background: #e5e7eb;
+      transform: translateY(-1px);
+    }
+
+    nav a.active-link {
+      background: linear-gradient(135deg, #4f46e5, #a855f7);
+      color: #f9fafb;
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4);
+    }
+
+    /* Layout */
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 70px 16px 90px;
+      background: #f9fafb;
+    }
+
+    section {
+      background: #ffffff;
+      padding: 40px 30px 42px;
+      margin: 40px 0;
+      border-radius: 24px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.07);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      position: relative;
+    }
+
+    section:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .section-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #4f46e5, #a855f7);
+      color: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      letter-spacing: -0.03em;
+      color: #111827;
+    }
+
+    .section-subtitle {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #374151;
+      margin-bottom: 14px;
+    }
+
+    .muted {
+      color: #6b7280;
+    }
+
+    /* Chips / stats */
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 20px;
+    }
+
+    .chip {
+      font-size: 0.78rem;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .fact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 18px 0 8px;
+    }
+
+    .fact-card {
+      border-radius: 18px;
+      padding: 16px 15px;
+      background: linear-gradient(135deg, #eef2ff, #e0f2fe);
+      border: 1px solid #d4d4ff;
+      font-size: 0.9rem;
+    }
+
+    .fact-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4b5563;
+      margin-bottom: 6px;
+    }
+
+    .fact-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    /* Accordion */
+    .accordion {
+      margin: 16px 0;
+      border-radius: 18px;
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+      background: #f9fafb;
+    }
+
+    .accordion-header {
+      padding: 14px 18px;
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-size: 0.98rem;
+      font-weight: 600;
+    }
+
+    .accordion-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 18px;
+      background: #f9fafb;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      font-size: 0.95rem;
+    }
+
+    .accordion-content.open {
+      padding: 14px 18px 16px;
+    }
+
+    .accordion-icon {
+      transition: transform 0.25s ease;
+    }
+
+    .accordion-icon.rotate {
+      transform: rotate(180deg);
+    }
+
+    /* Timeline */
+    .timeline {
+      margin-top: 18px;
+      padding-top: 10px;
+      border-top: 1px dashed #d1d5db;
+    }
+
+    .timeline-years {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .timeline-years button {
+      border-radius: 999px;
+      padding: 6px 12px;
+      border: 1px solid #d4d4ff;
+      background: #eef2ff;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .timeline-years button.active {
+      background: linear-gradient(135deg, #4f46e5, #a855f7);
+      color: #f9fafb;
+      box-shadow: 0 5px 16px rgba(79, 70, 229, 0.5);
+    }
+
+    .timeline-body {
+      font-size: 0.9rem;
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    /* Glossary */
+    .glossary-term {
+      border-bottom: 1px dotted #a855f7;
+      cursor: pointer;
+    }
+
+    .glossary-term:hover {
+      color: #7c3aed;
+    }
+
+    .glossary-box {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.4);
+      padding: 12px 14px 14px;
+      border: 1px solid #e5e7eb;
+      display: none;
+      z-index: 1300;
+      font-size: 0.9rem;
+    }
+
+    .glossary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .glossary-title {
+      font-weight: 700;
+      color: #4f46e5;
+      font-size: 0.9rem;
+    }
+
+    .glossary-close {
+      border-radius: 999px;
+      width: 22px;
+      height: 22px;
+      border: none;
+      cursor: pointer;
+      background: #eef2ff;
+      color: #4b5563;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+
+    .glossary-body {
+      color: #374151;
+    }
+
+    /* Risk slider & profile */
+    .tool-box {
+      margin-top: 18px;
+      padding: 16px 18px 20px;
+      border-radius: 18px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      font-size: 0.95rem;
+    }
+
+    .tool-box h3 {
+      font-size: 1rem;
+      margin-bottom: 6px;
+      color: #1d4ed8;
+    }
+
+    .tool-box small {
+      color: #4b5563;
+    }
+
+    .tool-box input[type="range"] {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .risk-output {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #ffffff;
+      border-left: 4px solid #4f46e5;
+      font-size: 0.9rem;
+    }
+
+    .risk-level {
+      font-weight: 700;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .profile-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.87rem;
+    }
+
+    .profile-option input {
+      margin-top: 2px;
+    }
+
+    .profile-summary {
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .profile-score {
+      font-weight: 700;
+    }
+
+    /* Quiz */
+    .quiz {
+      margin-top: 18px;
+      padding: 16px 18px 18px;
+      border-radius: 18px;
+      background: #fef3c7;
+      border: 1px solid #facc15;
+      font-size: 0.95rem;
+    }
+
+    .quiz h3 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+      color: #92400e;
+    }
+
+    .quiz-question {
+      margin-bottom: 8px;
+    }
+
+    .quiz-question p {
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+      color: #78350f;
+    }
+
+    .quiz label {
+      display: block;
+      font-size: 0.88rem;
+      cursor: pointer;
+      color: #92400e;
+    }
+
+    .quiz button {
+      margin-top: 8px;
+      padding: 7px 16px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: #f97316;
+      color: #fff7ed;
+      box-shadow: 0 6px 20px rgba(248, 113, 113, 0.5);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .quiz button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 9px 24px rgba(248, 113, 113, 0.7);
+    }
+
+    .quiz-result {
+      margin-top: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .quiz-good {
+      color: #166534;
+    }
+
+    .quiz-mid {
+      color: #b45309;
+    }
+
+    .quiz-bad {
+      color: #b91c1c;
+    }
+
+    /* Tabs (case studies, solutions) */
+    .tab-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0 10px;
+    }
+
+    .tab-btn {
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      border: 1px solid #e5e7eb;
+      background: #f3f4f6;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #4f46e5, #a855f7);
+      color: #f9fafb;
+      border-color: transparent;
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.4);
+    }
+
+    .tab-panel {
+      border-radius: 14px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px 12px;
+      font-size: 0.93rem;
+    }
+
+    /* Highlights & tags */
+    .callout {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #fee2e2;
+      border-left: 4px solid #ef4444;
+      font-size: 0.9rem;
+      color: #7f1d1d;
+    }
+
+    .callout.green {
+      background: #ecfdf5;
+      border-left-color: #10b981;
+      color: #064e3b;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #fee2e2;
+      color: #b91c1c;
+      margin-right: 6px;
+    }
+
+    .tag-soft {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    /* Citations section */
+    .citation-box {
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #f3f4f6;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .citation-box p {
+      margin-bottom: 6px;
+    }
+
+    .citation-box a {
+      color: #4f46e5;
+      text-decoration: none;
+    }
+
+    .citation-box a:hover {
+      text-decoration: underline;
+    }
+
+    /* Back to top */
+    .back-to-top {
+      position: fixed;
+      right: 18px;
+      bottom: 20px;
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #4f46e5, #a855f7);
+      color: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      cursor: pointer;
+      box-shadow: 0 12px 32px rgba(79, 70, 229, 0.7);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 1000;
+    }
+
+    .back-to-top.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .back-to-top:hover {
+      transform: translateY(-3px);
+    }
+
+    /* Expert mode */
+    .deep-dive {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #e5e7eb;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+
+    body.expert-mode .deep-dive {
+      display: block;
+    }
+
+    .deep-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b21a8;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 768px) {
+      section {
+        padding: 26px 18px 28px;
+        margin: 28px 0;
+      }
+      .page {
+        padding-top: 40px;
+      }
+      nav ul {
+        justify-content: flex-start;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      nav ul::-webkit-scrollbar {
+        display: none;
+      }
+      .hero-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Scroll progress -->
+  <div class="progress-container">
+    <div class="progress-bar" id="scrollProgress"></div>
+  </div>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-orbit"></div>
+    <h1 class="hero-title">PFAS: The Forever Chemicals</h1>
+    <p class="hero-subtitle">
+      Explore how a family of more than 4,600 man-made compounds spread from factories into
+      rivers, food, blood, and even unborn children — and what we can do about it.
+    </p>
+    <p class="hero-meta">Interactive summary based on research by Daniel Tuiakov</p>
+
+    <div class="pill-row">
+      <div class="pill">
+        <span>97%</span> of Americans have PFAS in their blood
+      </div>
+      <div class="pill">
+        Half-lives in humans: 2.7–5.5 years
+      </div>
+      <div class="pill">
+        Group 1 carcinogen: PFOA
+      </div>
+    </div>
+
+    <div class="hero-buttons">
+      <button class="btn-primary" id="startTourBtn">
+        Start guided tour
+        <span>↓</span>
+      </button>
+      <button class="btn-soft" id="jumpToHealthBtn">
+        Jump to health impacts
+      </button>
+      <div class="mode-toggle">
+        <span class="mode-label">Detail level:</span>
+        <label class="switch">
+          <input type="checkbox" id="modeSwitch">
+          <span class="slider-toggle"></span>
+        </label>
+        <span class="mode-note">Basic facts / Deep dive</span>
+      </div>
+    </div>
+
+    <div class="scroll-indicator" id="scrollDown">▼</div>
+  </header>
+
+  <!-- Sticky nav -->
+  <nav id="navbar">
+    <ul>
+      <li><a href="#intro">Intro</a></li>
+      <li><a href="#spread">Spread & Exposure</a></li>
+      <li><a href="#health">Health Effects</a></li>
+      <li><a href="#pregnancy">Pregnancy & Children</a></li>
+      <li><a href="#cases">Case Studies</a></li>
+      <li><a href="#solutions">Solutions</a></li>
+      <li><a href="#action">What You Can Do</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ul>
+  </nav>
+
+  <main class="page">
+    <!-- 1. Intro / What PFAS are -->
+    <section id="intro">
+      <div class="section-header">
+        <div class="section-badge">1</div>
+        <div>
+          <h2>What Exactly Are PFAS?</h2>
+          <p class="section-subtitle">
+            A giant chemical family designed to be indestructible – and that’s the problem.
+          </p>
+        </div>
+      </div>
+
+      <p>
+        <strong>PFAS (per- and polyfluoroalkyl substances)</strong> are a family of over
+        4,600 synthetic chemicals invented in the late 1940s. They include well-known compounds
+        like PFOA, PFOS, PFHxS, and PFNA, used for their resistance to heat, oil, and water (American Cancer Society par. 1) .
+      </p>
+      <p>
+        Their super-power is an extremely strong carbon–fluorine bond. That bond makes PFAS
+        great for non-stick pans, waterproof fabrics, and firefighting foam — but it also means
+        they almost never break down in the environment or the human body (Bonato et al. par. 2). 
+      </p>
+
+      <div class="chip-row">
+        <span class="chip">Non-stick &amp; stain-resistant products</span>
+        <span class="chip">Firefighting foam (AFFF)</span>
+        <span class="chip">Food packaging &amp; grease-proof paper</span>
+        <span class="chip">Cosmetics &amp; personal care</span>
+      </div>
+
+      <div class="fact-grid">
+        <div class="fact-card">
+          <div class="fact-label">Number of PFAS chemicals</div>
+          <div class="fact-value">&gt; 4,600</div>
+          <p class="muted">Used in everything from cookware to cosmetics.</p>
+        </div>
+        <div class="fact-card">
+          <div class="fact-label">People with PFAS in blood</div>
+          <div class="fact-value">97%</div>
+          <p class="muted">According to the the National Institute of Environmental Health Sciences in the U.S.almost all Americans tested have detectable PFAS (par. 3). </p>
+        </div>
+        <div class="fact-card">
+          <div class="fact-label">Half-life in humans</div>
+          <div class="fact-value">2.7–5.5y</div>
+          <p class="muted">PFAS can stay in the body for years before levels fall by half.</p>
+        </div>
+      </div>
+
+      <div class="accordion">
+        <div class="accordion-header">
+          <div class="accordion-title">
+            <span>🔬 Why “forever”?</span>
+          </div>
+          <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+          <p>
+            PFAS are often described as
+            <span class="glossary-term" data-term="Forever chemicals" data-definition="Nick-name for PFAS because they do not appreciably biodegrade. Once released, they persist in soil, water, wildlife and humans for decades or longer.">
+              “forever chemicals”
+            </span>
+            because:
+          </p>
+          <ul style="margin-left:16px; font-size:0.95rem;">
+            <li>the carbon–fluorine bond is one of the strongest in organic chemistry,</li>
+            <li>they resist heat, sunlight, and chemical attack,</li>
+            <li>they don’t biodegrade, so they keep cycling through air–water–soil–food.</li>
+          </ul>
+          <p style="margin-top:8px;">
+            They are also classified as
+            <span class="glossary-term"
+              data-term="Persistent Mobile Organic Contaminants (PMOCs)"
+              data-definition="A class of chemicals that are both persistent (they don’t break down) and mobile (they travel easily through water), allowing them to spread far from their original source.">
+              Persistent Mobile Organic Contaminants
+            </span>, meaning they’re both long-lived and extremely mobile in water (Bonato et al. par. 1).
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <div style="font-size:0.9rem; color:#4b5563; margin-bottom:6px;">
+          Tap a decade to see a key PFAS moment:
+        </div>
+        <div class="timeline-years" id="timelineYears">
+          <button type="button" data-key="1940s" class="active">1940s</button>
+          <button type="button" data-key="1960s">1960s–80s</button>
+          <button type="button" data-key="1998">1998–2009</button>
+          <button type="button" data-key="2010s">2010s</button>
+          <button type="button" data-key="2020s">2020s</button>
+        </div>
+        <div class="timeline-body" id="timelineBody">
+          Late 1940s: PFAS are first manufactured and quickly adopted in non-stick cookware,
+          stain-resistant fabrics, and industrial applications.
+        </div>
+      </div>
+
+      <div class="deep-dive">
+        <div class="deep-label">Deep dive</div>
+        <p>
+          
+          DuPont and 3M collected evidence of liver damage, birth defects, and high blood levels
+          in workers decades before the public knew, while continuing to market PFAS as safe (Kluger par. 4-5).
+        </p>
+      </div>
+    </section>
+
+    <!-- 2. Spread & exposure -->
+    <section id="spread">
+      <div class="section-header">
+        <div class="section-badge">2</div>
+        <div>
+          <h2>How Do PFAS Spread & Reach Us?</h2>
+          <p class="section-subtitle">
+            From factories to rivers, to crops, to tap water — then into our blood.
+          </p>
+        </div>
+      </div>
+
+      <p>
+        PFAS contamination is truly global. These chemicals have been detected in oceans, rivers,
+        lakes, groundwater, soil, and wildlife on every continent — including remote regions like
+        the Arctic and Antarctic (Bonato et al. par. 2). 
+      </p>
+
+      <div class="tool-box">
+        <h3>Build your exposure profile</h3>
+        <small>Check what matches your situation to see a rough exposure picture.</small>
+        <div class="profile-grid">
+          <label class="profile-option">
+            <input type="checkbox" class="exposure-check" data-score="2">
+            <span>I frequently use older non-stick cookware (scratched or several years old).</span>
+          </label>
+          <label class="profile-option">
+            <input type="checkbox" class="exposure-check" data-score="3">
+            <span>My region has reported PFAS in public drinking water or groundwater.</span>
+          </label>
+          <label class="profile-option">
+            <input type="checkbox" class="exposure-check" data-score="2">
+            <span>I often eat fast food / takeout served in grease-proof wrappers or boxes.</span>
+          </label>
+          <label class="profile-option">
+            <input type="checkbox" class="exposure-check" data-score="1">
+            <span>My home has stain-resistant carpets, sofas, or waterproof textiles.</span>
+          </label>
+          <label class="profile-option">
+            <input type="checkbox" class="exposure-check" data-score="2">
+            <span>I live near an airport, military base, or industrial site that may use firefighting foam.</span>
+          </label>
+        </div>
+        <div class="profile-summary" id="profileSummary">
+          Estimated score: <span class="profile-score">0</span> –
+          based on your answers, everyday exposure still likely exists (almost everyone has some PFAS
+          in their body), but your added risk factors look relatively low.
+        </div>
+      </div>
+
+      <p style="margin-top:18px;">
+        Researchers describe three main exposure pathways:
+      </p>
+
+      <div class="fact-grid">
+        <div class="fact-card">
+          <div class="fact-label">1. Oral</div>
+          <p>
+            Drinking contaminated water, eating crops grown on polluted soil, fish from polluted
+            rivers, or animal products from exposed herds. Studies identify <strong>food and water</strong>
+            as the primary exposure routes (Dehghani et al. 6). 
+          </p>
+        </div>
+        <div class="fact-card">
+          <div class="fact-label">2. Inhalation</div>
+          <p>
+            Breathing air and dust near factories, incinerators, or indoors where PFAS-treated
+            products shed particles into household dust (Dehghani et al. 7). 
+          </p>
+        </div>
+        <div class="fact-card">
+          <div class="fact-label">3. Dermal</div>
+          <p>
+            Skin contact with PFAS-treated clothing and carpets, cosmetics, and food packaging.
+          </p>
+        </div>
+      </div>
+
+      <div class="tool-box">
+        <h3>Water contamination slider</h3>
+        <small>
+          Slide to simulate PFAS in tap water (ng/L = parts per trillion). Old U.S. advisory levels
+          were 70 ng/L combined; newer health-based advisory levels are close to zero.
+        </small>
+        <input type="range" id="waterSlider" min="0" max="100" step="5" value="10">
+        <div class="risk-output" id="waterRisk">
+          <span class="risk-level">Low–moderate level:</span>
+          even at 10 ng/L, PFAS accumulate slowly in the body over years. Newer health advisories
+          suggest there may be <em>no</em> completely safe chronic exposure. :contentReference[oaicite:9]{index=9}
+        </div>
+      </div>
+
+      <div class="deep-dive">
+        <div class="deep-label">Deep dive</div>
+        <p>
+         DuPont’s Washington Works
+          plant in West Virginia released about 1.7 million pounds of PFOA (C8) to air and water,
+          raising average local blood levels to roughly six times the U.S. average. Similar crises
+          occurred in the Veneto region of Italy and in Ronneby, Sweden, where firefighting foam
+          contaminated municipal wells (Bonato et al. 2)
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. Health effects -->
+    <section id="health">
+      <div class="section-header">
+        <div class="section-badge">3</div>
+        <div>
+          <h2>How Do PFAS Affect Human Health?</h2>
+          <p class="section-subtitle">
+            Cancers, immune disruption, cholesterol changes, and more – backed by large studies.
+          </p>
+        </div>
+      </div>
+
+      <p>
+        PFAS are not just a theoretical risk. The <strong>C8 Health Project</strong> — one of the largest
+        environmental health studies in U.S. history, with about 69,000 participants — evaluated
+        communities exposed to PFOA from DuPont’s Washington Works plant. The independent
+        science panel found “probable links” between PFOA exposure and several serious
+        diseases.
+      </p>
+
+      <div class="chip-row">
+          These include:
+        <span class="chip">Kidney cancer</span>
+        <span class="chip">Testicular cancer</span>
+        <span class="chip">Ulcerative colitis</span>
+        <span class="chip">Thyroid disease</span>
+        <span class="chip">High cholesterol</span>
+        <span class="chip">Pregnancy-induced hypertension</span>
+      </div>
+
+      <div class="fact-grid">
+        <div class="fact-card">
+          <div class="fact-label">Cancer classification</div>
+          <p>
+            In 2023, the International Agency for Research on Cancer (IARC) categorized
+            <strong>PFOA as Group 1 – carcinogenic to humans</strong>, based on sufficient evidence for
+            kidney and testicular cancer. PFOS was classified as “possibly carcinogenic” (par. 4)
+        </div>
+        <div class="fact-card">
+          <div class="fact-label">Immune system</div>
+          <p>
+            Elevated PFAS levels are linked to weakened antibody responses and poorer vaccine
+            effectiveness, especially in children, along with possible higher infection risk. 
+          </p>
+        </div>
+        <div class="fact-card">
+          <div class="fact-label">Metabolic & liver</div>
+          <p>
+            PFAS exposure is associated with higher cholesterol, thyroid problems, and
+            non-alcoholic fatty liver disease due to disrupted lipid metabolism (Dehghani et al. 37). 
+          </p>
+        </div>
+      </div>
+
+      <div class="quiz" id="healthQuiz">
+        <h3>Quick check: can you spot the real PFAS effects?</h3>
+        <div class="quiz-question">
+          <p>1. Which of these is a <strong>documented probable link</strong> from the C8 Health Project?</p>
+          <label><input type="radio" name="hq1" value="a"> Hair color changes</label>
+          <label><input type="radio" name="hq1" value="b"> Kidney and testicular cancer</label>
+          <label><input type="radio" name="hq1" value="c"> Nearsightedness</label>
+        </div>
+        <div class="quiz-question">
+          <p>2. PFAS can:</p>
+          <label><input type="radio" name="hq2" value="a"> Strengthen vaccine response</label>
+          <label><input type="radio" name="hq2" value="b"> Have no effect on immune system</label>
+          <label><input type="radio" name="hq2" value="c"> Weaken antibody production in children</label>
+        </div>
+        <div class="quiz-question">
+          <p>3. PFOA’s IARC classification means:</p>
+          <label><input type="radio" name="hq3" value="a"> Evidence is too uncertain</label>
+          <label><input type="radio" name="hq3" value="b"> It’s carcinogenic to humans (Group 1)</label>
+          <label><input type="radio" name="hq3" value="c"> It’s only dangerous to animals</label>
+        </div>
+        <button type="button" onclick="checkHealthQuiz()">Check answers</button>
+        <div class="quiz-result" id="healthQuizResult"></div>
+      </div>
+
+      <div class="callout">
+        <span class="tag">Important</span>
+        These health effects are not just correlations in small studies. They come from large,
+        well-designed epidemiologic research and are backed by toxicological mechanisms
+        (liver, hormone, and immune disruption).
+      </div>
+
+      <div class="deep-dive">
+        <div class="deep-label">Deep dive</div>
+        <p>
+          PFOA is now grouped with asbestos and tobacco smoke in IARC’s highest cancer category.
+          Your sources highlight that industry arguments about “uncertain science” ignore decades
+          of accumulating evidence and the cost of cancer, immune dysfunction, and lost quality of
+          life in affected communities.
+        </p>
+      </div>
+    </section>
+
+    <!-- 4. Pregnancy & children -->
+    <section id="pregnancy">
+      <div class="section-header">
+        <div class="section-badge">4</div>
+        <div>
+          <h2>PFAS, Pregnancy & Child Development</h2>
+          <p class="section-subtitle">
+            PFAS can cross the placenta and show up in breast milk — affecting the next generation.
+          </p>
+        </div>
+      </div>
+
+      <p>
+        A key concern in your research is how PFAS reach fetuses and infants. Studies show PFAS
+        can cross the placenta, appear in cord blood, and be detected in breast milk at tens to
+        hundreds of ng/L.
+      </p>
+
+      <div class="accordion">
+        <div class="accordion-header">
+          <div class="accordion-title">
+            <span>🧬 What happens during pregnancy?</span>
+          </div>
+          <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+          <ul style="margin-left:16px; font-size:0.95rem;">
+            <li>PFAS can interfere with
+              <span class="glossary-term"
+                data-term="PPARs"
+                data-definition="Peroxisome proliferator-activated receptors, hormone-related receptors that regulate lipid metabolism and energy balance in the placenta and fetus.">
+                PPAR signaling
+              </span>, which helps regulate lipid metabolism and energy balance.</li>
+            <li>Higher maternal PFAS levels have been linked to <strong>lower birth weight</strong>
+              in multiple cohorts.</li>
+            <li>Exposure has been associated with pregnancy-induced hypertension and gestational
+              diabetes in some studies.</li>
+          </ul>
+          <p style="margin-top:8px;">
+            A Canadian study (MIREC) found that each 10-fold increase in maternal PFOA was linked
+            to a measurable drop in birth-weight z-score. In an Ohio Valley cohort, PFOS exposure
+            was associated with a ~29 g decrease in fetal weight per log-unit increase (Szilagyi et al. 6). 
+          </p>
+        </div>
+      </div>
+
+      <div class="fact-grid">
+        <div class="fact-card">
+          <div class="fact-label">Breast milk</div>
+          <p>
+            PFOA and PFOS are frequently detected in breast milk. Concentrations and trends over
+            months vary by chemical, but PFAS clearly reach nursing infants (Szilagyi et al. 6).
+          </p>
+        </div>
+        <div class="fact-card">
+          <div class="fact-label">Hormones</div>
+          <p>
+            PFAS mixtures have been linked to altered sex hormone levels in teens and changes in
+            markers along the hypothalamic–pituitary–gonadal axis (Dehghani et al. 28).  
+          </p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="tag-soft">Takeaway</span>
+        PFAS exposure isn’t just about today’s adults. It can shape fetal growth, birth outcomes,
+        hormone balances, and long-term risks like obesity and cardiometabolic disease in
+        children (Szilagyi et al. 6). 
+      </div>
+    </section>
+
+    <!-- 5. Case studies -->
+    <section id="cases">
+      <div class="section-header">
+        <div class="section-badge">5</div>
+        <div>
+          <h2>Real-World Case Studies</h2>
+          <p class="section-subtitle">
+            Zoom into three hotspots where PFAS pollution changed entire communities.
+          </p>
+        </div>
+      </div>
+
+      <p>
+        Click a hotspot to see how PFAS contamination looked in real places described in your
+        research:
+      </p>
+
+      <div class="tab-row" id="caseTabs">
+        <button class="tab-btn active" data-case="wv">Mid-Ohio Valley, USA</button>
+        <button class="tab-btn" data-case="veneto">Veneto, Italy</button>
+        <button class="tab-btn" data-case="ronneby">Ronneby, Sweden</button>
+      </div>
+      <div class="tab-panel" id="casePanel">
+        <p>
+          <strong>Mid-Ohio Valley, USA (DuPont Washington Works)</strong><br>
+          For decades, DuPont’s Washington Works plant in West Virginia released PFOA (C8) into
+          the Ohio River and local environment. Between 1951 and 2003, an estimated 1.7 million
+          pounds were emitted. Residents in six nearby counties had average blood PFOA levels of
+          about 32.9 ng/mL — compared with 5.2 ng/mL for the general U.S. population (Bonato et al. 5).
+        </p>
+        <p>
+          Community lawsuits led to the C8 Health Project, which collected blood samples and
+          health data from around 69,000 people, ultimately confirming probable links between PFOA
+          and multiple diseases (Frisbee et al. 1875-1877). 
+        </p>
+      </div>
+
+      <div class="deep-dive">
+        <div class="deep-label">Deep dive</div>
+        <p>
+          Internal company documents uncovered in lawsuits showed DuPont and 3M had evidence
+          of birth defects, liver damage, and high worker blood levels by the 1960s–1980s but
+          continued marketing PFAS as safe and under-reported risks to regulators (Kluger par. 6). 
+        </p>
+      </div>
+    </section>
+
+    <!-- 6. Solutions & technology -->
+    <section id="solutions">
+      <div class="section-header">
+        <div class="section-badge">6</div>
+        <div>
+          <h2>Can We Remove PFAS From Water?</h2>
+          <p class="section-subtitle">
+            Chaudhary et al. say yes – but it’s expensive, and someone has to pay.
+          </p>
+        </div>
+      </div>
+
+      <p>
+        Conventional wastewater treatment can’t eliminate PFAS. They pass through standard
+        processes essentially unchanged. But advanced technologies <em>can</em> strip PFAS from
+        drinking water.
+      </p>
+
+      <div class="tab-row" id="techTabs">
+        <button class="tab-btn active" data-tech="nanofilter">Nanofiltration membrane</button>
+        <button class="tab-btn" data-tech="gac">Granular activated carbon</button>
+        <button class="tab-btn" data-tech="ro">Reverse osmosis</button>
+      </div>
+      <div class="tab-panel" id="techPanel">
+        <p>
+          <strong>Dual-functional nanofiltration membrane</strong><br>
+          A 2023 study developed a mixed-matrix membrane using carbon nanotubes and ceramic
+          components. In lab tests, it removed about <strong>90–99% of PFOA</strong> while maintaining high
+          water flux and good stability — a promising tool for advanced treatment plants.
+        </p>
+        <p>
+          The fact that we need high-tech nano-engineered membranes at all shows how hard it is
+          to clean up “forever chemicals” once they’re loose in the environment.
+        </p>
+      </div>
+
+      <div class="tool-box">
+        <h3>Who should pay? (Opinion slider)</h3>
+        <small>Slide to explore how cleanup responsibility shifts.</small>
+        <input type="range" id="paySlider" min="0" max="100" step="10" value="40">
+        <div class="risk-output" id="payOutput">
+          At this setting, costs are split: utilities and governments pay some to protect
+          drinking water, but polluting industries still cover a significant share under
+          “polluter pays” principles.
+        </div>
+      </div>
+
+      <div class="callout green">
+        <span class="tag-soft">Policy shift</span>
+        Recent EPA health advisories for PFOA and PFOS push acceptable drinking-water
+        concentrations close to zero, reflecting updated evidence that even very low chronic
+        exposures may be risky. Many states are now moving toward enforceable limits and
+        stronger regulation (USEPA, “Per- and Poly” par. 4). 
+      </div>
+    </section>
+
+    <!-- 7. What you can do -->
+    <section id="action">
+      <div class="section-header">
+        <div class="section-badge">7</div>
+        <div>
+          <h2>What Can Ordinary People Do?</h2>
+          <p class="section-subtitle">
+            Individual choices can lower exposure, but systemic change is essential.
+          </p>
+        </div>
+      </div>
+
+      <p>
+        No one can completely avoid PFAS — they’re too widespread. But you <em>can</em> lower your
+        personal exposure <strong>and</strong> support policies that tackle the root causes.
+      </p>
+
+      <div class="fact-grid">
+        <div class="fact-card">
+          <div class="fact-label">At home</div>
+          <ul style="margin-left:16px; font-size:0.9rem;">
+            <li>Use PFAS-free cookware (e.g., stainless steel, cast iron, true ceramic).</li>
+            <li>Limit use of stain-resistant sprays and waterproofing treatments.</li>
+            <li>Reduce fast-food packaging exposure when possible.</li>
+          </ul>
+        </div>
+        <div class="fact-card">
+          <div class="fact-label">Water</div>
+          <ul style="margin-left:16px; font-size:0.9rem;">
+            <li>Check if your utility has published PFAS testing results.</li>
+            <li>Consider a filter certified to reduce PFAS (often reverse osmosis or carbon).</li>
+          </ul>
+        </div>
+        <div class="fact-card">
+          <div class="fact-label">Civic action</div>
+          <ul style="margin-left:16px; font-size:0.9rem;">
+            <li>Support strong PFAS regulations and cleanup funding.</li>
+            <li>Back “polluter pays” policies so communities aren’t stuck with the bill.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tool-box">
+        <h3>Create your mini action plan</h3>
+        <small>Pick at least 2 actions you’d realistically take.</small>
+        <div class="profile-grid">
+          <label class="profile-option">
+            <input type="checkbox" class="action-check">
+            <span>Look up my local water utility’s PFAS reports or ask them to test.</span>
+          </label>
+          <label class="profile-option">
+            <input type="checkbox" class="action-check">
+            <span>Switch one frequently used pan to PFAS-free cookware.</span>
+          </label>
+          <label class="profile-option">
+            <input type="checkbox" class="action-check">
+            <span>Reduce fast-food meals in PFAS-lined packaging each week.</span>
+          </label>
+          <label class="profile-option">
+            <input type="checkbox" class="action-check">
+            <span>Contact a local representative about supporting strict PFAS limits.</span>
+          </label>
+        </div>
+        <div class="profile-summary" id="actionSummary">
+          Choose actions above to build a simple, realistic PFAS action plan.
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Sources -->
+    <section id="sources">
+      <div class="section-header">
+        <div class="section-badge">8</div>
+        <div>
+          <h2>Key Sources Behind This Page</h2>
+          <p class="section-subtitle">
+            All science and case details are drawn from peer-reviewed articles and reputable reports
+            summarized in my essay, annotated bibliography and other essays.
+          </p>
+        </div>
+      </div>
+
+      <div class="citation-box">
+        <p><strong>Primary research argument (PFAS harms & policy):</strong></p>
+        <p>
+          Tuiakov, Daniel. “Negative Consequences of PFAS, PFOA and PFOS Exposure on Human
+          Life and the Environment.” English Composition II research paper, 2025. 
+        </p>
+      </div>
+
+      <div class="citation-box">
+        <p><strong>Annotated bibliography (detailed study summaries):</strong></p>
+        <p>
+          Tuiakov, Daniel. “Annotated Bibliography.” English Composition II, 2025 – summarizing
+          sources including the American Cancer Society, Chaudhary et al. on nanofiltration,
+          Dehghani et al. on exposure pathways, Frisbee et al. on the C8 Health Project, Szilagyi
+          et al. on placenta and pregnancy, IARC, EPA guidance, and investigative reporting by
+          Kluger in <em>Time</em>.
+        </p>
+      </div>
+
+      <p class="muted" style="margin-top:12px;">
+      
+        
+      </p>
+    </section>
+    <!-- 9. Works Cited -->
+    <section id="works-cited">
+      <div class="section-header">
+        <div class="section-badge">9</div>
+        <div>
+          <h2>Works Cited</h2>
+          <p class="section-subtitle">
+            Complete MLA 9 citations for all sources referenced in this research and essay.
+          </p>
+        </div>
+      </div>
+
+      <div style="padding-left: 2em; text-indent: -2em; line-height: 2; font-size: 0.95rem;">
+        <p style="margin-bottom: 1em;">
+          American Cancer Society. "PFOA, PFOS, and Related PFAS Chemicals." <em>American Cancer Society</em>, https://www.cancer.org/cancer/risk-prevention/chemicals/teflon-and-perfluorooctanoic-acid-pfoa.html. Accessed 29 Oct. 2025.
+        </p>
+        
+        <p style="margin-bottom: 1em;">
+          Bonato, Marco, et al. "Per and Polyfluoroalkyl Substances: A Systematic Review of Toxicological Profiles and Human Exposure." <em>International Journal of Environmental Research and Public Health</em>, vol. 17, no. 21, 2020, p. 8020, https://pmc.ncbi.nlm.nih.gov/articles/PMC7663035/pdf/ijerph-17-08020.pdf.
+        </p>
+        
+        <p style="margin-bottom: 1em;">
+          Chaudhary, Mohit, et al. "Efficient PFOA Removal from Drinking Water by a Dual-Functional Mixed-Matrix-Composite Nanofiltration Membrane." <em>NPJ Clean Water</em>, vol. 6, no. 77, 7 Nov. 2023, https://www.nature.com/articles/s41545-023-00286-2.
+        </p>
+        
+        <p style="margin-bottom: 1em;">
+          Dehghani, Mohammad Hadi, et al. "An Insight into the Environmental and Human Health Impacts of Per- and Polyfluoroalkyl Substances (PFAS): Exploring Exposure Pathways and Their Implications." <em>Environmental Sciences Europe</em>, vol. 37, no. 81, 2 June 2025, https://link.springer.com/article/10.1186/s12302-025-01122-9.
+        </p>
+        
+        <p style="margin-bottom: 1em;">
+          Frisbee, Stephanie J., et al. "The C8 Health Project: Design, Methods, and Participants." <em>Environmental Health Perspectives</em>, vol. 117, no. 12, 13 July 2009, pp. 1873–82, https://pmc.ncbi.nlm.nih.gov/articles/PMC2799461.
+        </p>
+        
+        <p style="margin-bottom: 1em;">
+          International Agency for Research on Cancer. "IARC Monographs Evaluate the Carcinogenicity of Perfluorooctanoic Acid (PFOA) and Perfluorooctanesulfonic Acid (PFOS)." <em>IARC</em>, WHO, 1 Dec. 2023, https://www.iarc.who.int/news-events/iarc-monographs-evaluate-the-carcinogenicity-of-perfluorooctanoic-acid-pfoa-and-perfluorooctanesulfonic-acid-pfos/. Accessed 4 Dec. 2025.
+        </p>
+        
+        <p style="margin-bottom: 1em;">
+          Kluger, Jeffrey. "Companies Hid Dangers of PFAS 'Forever Chemicals' for Decades." <em>Time</em>, Time USA, 1 June 2023, https://time.com/6284266/pfas-forever-chemicals-manufacturers-kept-secret/.
+        </p>
+        
+        <p style="margin-bottom: 1em;">
+          National Institute of Environmental Health Sciences. "Perfluoroalkyl and Polyfluoroalkyl Substances (PFAS)." <em>NIEHS</em>, U.S. Department of Health and Human Services, 6 May 2025, https://www.niehs.nih.gov/health/topics/agents/pfc. Accessed 4 Dec. 2025.
+        </p>
+        
+        <p style="margin-bottom: 1em;">
+          Szilagyi, John T., et al. "Perfluoroalkyl Substances (PFAS) and Their Effects on the Placenta, Pregnancy, and Child Development: A Potential Mechanistic Role for Placental Peroxisome Proliferator-Activated Receptors (PPARs)." <em>Early Life Environmental Health</em>, edited by H. Volk and J. Buckley, vol. 7, 18 Aug. 2020, pp. 222-30, https://pmc.ncbi.nlm.nih.gov/articles/PMC7473499/.
+        </p>
+        
+        <p style="margin-bottom: 1em;">
+          United States Environmental Protection Agency. "Drinking Water Health Advisory for Perfluorooctanoic Acid (PFOA)." <em>EPA</em>, May 2016, https://www.epa.gov/sites/default/files/2016-05/documents/pfoa_health_advisory_final_508.pdf.
+        </p>
+        
+        <p style="margin-bottom: 1em;">
+          United States Environmental Protection Agency. "Per and Polyfluoroalkyl Substances (PFAS)." <em>EPA</em>, https://www.epa.gov/sdwa/and-polyfluoroalkyl-substances-pfas. Accessed 29 Nov. 2025.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <div class="glossary-box" id="glossaryBox">
+    <div class="glossary-header">
+      <div class="glossary-title" id="glossaryTitle">Term</div>
+      <button class="glossary-close" id="glossaryClose">✕</button>
+    </div>
+    <div class="glossary-body" id="glossaryBody">
+      Definition goes here.
+    </div>
+  </div>
+
+  <div class="back-to-top" id="backToTop">↑</div>
+
+  <script>
+    // Smooth scroll helpers
+    function scrollToId(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    document.getElementById('scrollDown').addEventListener('click', () => scrollToId('intro'));
+    document.getElementById('startTourBtn').addEventListener('click', () => scrollToId('intro'));
+    document.getElementById('jumpToHealthBtn').addEventListener('click', () => scrollToId('health'));
+
+    // Mode switch (basic / deep dive)
+    const modeSwitch = document.getElementById('modeSwitch');
+    modeSwitch.addEventListener('change', () => {
+      if (modeSwitch.checked) {
+        document.body.classList.add('expert-mode');
+      } else {
+        document.body.classList.remove('expert-mode');
+      }
+    });
+
+    // Accordions
+    document.querySelectorAll('.accordion').forEach(acc => {
+      const header = acc.querySelector('.accordion-header');
+      const content = acc.querySelector('.accordion-content');
+      const icon = acc.querySelector('.accordion-icon');
+      header.addEventListener('click', () => {
+        const isOpen = content.classList.contains('open');
+        if (isOpen) {
+          content.style.maxHeight = null;
+          content.classList.remove('open');
+          icon.classList.remove('rotate');
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          content.classList.add('open');
+          icon.classList.add('rotate');
+        }
+      });
+    });
+
+    // Timeline
+    const timelineTexts = {
+      '1940s': 'Late 1940s: PFAS are first manufactured and quickly adopted in non-stick cookware, stain-resistant fabrics, and industrial applications.',
+      '1960s': '1960s–1980s: Internal company studies at DuPont and 3M find liver damage in animals and high PFAS levels in worker blood, but this evidence stays largely hidden from the public.',
+      '1998': '1998–2009: Lawsuits such as Tennant v. DuPont and Leach v. DuPont uncover secret documents. The C8 Health Project collects data from ~69,000 people and identifies probable links with several diseases.',
+      '2010s': '2010s: PFAS contamination is documented worldwide, from the Mid-Ohio Valley to Veneto (Italy) and Ronneby (Sweden). Regulators begin issuing health advisories and considering drinking-water limits.',
+      '2020s': '2020s: IARC classifies PFOA as Group 1 carcinogenic to humans. Advanced treatment technologies like nanofiltration and stricter PFAS regulations are developed, but cleanup remains costly.'
+    };
+
+    document.querySelectorAll('#timelineYears button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#timelineYears button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const key = btn.dataset.key;
+        document.getElementById('timelineBody').textContent = timelineTexts[key] || '';
+      });
+    });
+
+    // Glossary
+    const glossaryBox = document.getElementById('glossaryBox');
+    const glossaryTitle = document.getElementById('glossaryTitle');
+    const glossaryBody = document.getElementById('glossaryBody');
+    const glossaryClose = document.getElementById('glossaryClose');
+
+    document.querySelectorAll('.glossary-term').forEach(term => {
+      term.addEventListener('click', (e) => {
+        glossaryTitle.textContent = term.dataset.term;
+        glossaryBody.textContent = term.dataset.definition;
+        glossaryBox.style.display = 'block';
+      });
+    });
+
+    glossaryClose.addEventListener('click', () => {
+      glossaryBox.style.display = 'none';
+    });
+
+    // Exposure profile scoring
+    const exposureChecks = document.querySelectorAll('.exposure-check');
+    const profileSummary = document.getElementById('profileSummary');
+
+    function updateExposureScore() {
+      let score = 0;
+      exposureChecks.forEach(ch => {
+        if (ch.checked) score += Number(ch.dataset.score || 0);
+      });
+      let msg = '';
+      if (score <= 2) {
+        msg = 'Estimated score: ' + score + ' – your added risk factors look relatively low, but background PFAS exposure is still almost unavoidable.';
+      } else if (score <= 5) {
+        msg = 'Estimated score: ' + score + ' – you have several common exposure routes; reducing fast food packaging and checking water quality could help.';
+      } else {
+        msg = 'Estimated score: ' + score + ' – your profile suggests higher-than-average PFAS exposure. Water filtration and policy action in your area are especially important.';
+      }
+      profileSummary.innerHTML = 'Estimated score: <span class="profile-score">' + score + '</span> – ' + msg.split('–')[1];
+    }
+
+    exposureChecks.forEach(ch => ch.addEventListener('change', updateExposureScore));
+
+    // Water slider
+    const waterSlider = document.getElementById('waterSlider');
+    const waterRisk = document.getElementById('waterRisk');
+
+    function updateWaterRisk() {
+      const v = Number(waterSlider.value);
+      let text = '';
+      let label = '';
+      if (v <= 5) {
+        label = 'Very low level:';
+        text = ' close to new health-based advisory goals. Still, PFAS build up over years, so lower is always better.';
+      } else if (v <= 30) {
+        label = 'Low–moderate level:';
+        text = ' around or above older advisory values. Long-term exposure may carry measurable risk, especially for vulnerable groups.';
+      } else {
+        label = 'High level:';
+        text = ' similar to or exceeding concentrations seen in some impacted communities. Strong treatment and urgent policy response are needed.';
+      }
+      waterRisk.innerHTML = '<span class="risk-level">' + label + '</span>' + text;
+    }
+    waterSlider.addEventListener('input', updateWaterRisk);
+    updateWaterRisk();
+
+    // Health quiz
+    function checkHealthQuiz() {
+      const answers = { hq1: 'b', hq2: 'c', hq3: 'b' };
+      let correct = 0;
+      let total = 3;
+      Object.keys(answers).forEach(name => {
+        const selected = document.querySelector('input[name="' + name + '"]:checked');
+        if (selected && selected.value === answers[name]) correct++;
+      });
+      const result = document.getElementById('healthQuizResult');
+      if (correct === total) {
+        result.textContent = 'Perfect! You’ve got a solid grasp of the main PFAS health findings.';
+        result.className = 'quiz-result quiz-good';
+      } else if (correct === 0) {
+        result.textContent = 'You might want to re-read the section – PFAS health effects are more serious than they sound.';
+        result.className = 'quiz-result quiz-bad';
+      } else {
+        result.textContent = 'You got ' + correct + ' out of ' + total + ' correct. Review the health section to fill in the gaps.';
+        result.className = 'quiz-result quiz-mid';
+      }
+    }
+    window.checkHealthQuiz = checkHealthQuiz;
+
+    // Case study tabs
+    const caseTexts = {
+      wv: `<p><strong>Mid-Ohio Valley, USA (DuPont Washington Works)</strong><br>
+      For decades, DuPont’s Washington Works plant released PFOA into the Ohio River and air. Between 1951 and 2003, about 1.7 million pounds were emitted. Residents in six neighboring counties had average blood levels of 32.9 ng/mL vs. 5.2 ng/mL nationally.</p>
+      <p>Class-action lawsuits led to the C8 Health Project, which tied PFOA exposure to kidney cancer, testicular cancer, high cholesterol, and pregnancy-induced hypertension.</p>`,
+      veneto: `<p><strong>Veneto, Italy (Trissino plant)</strong><br>
+      A fluorochemical plant in Trissino discharged PFAS into groundwater and surface water, exposing ~140,000 residents. Groundwater PFOA levels reached up to 20 µg/L, far above the EPA’s 0.07 µg/L guidance level, with even higher peaks (up to 700 µg/L) in industrial wells(Bonato et al. 5; USEPA “Drinking Water” 9).</p>
+      <p>The incident is now considered one of the largest known PFAS exposure events in Europe.</p>`,
+      ronneby: `<p><strong>Ronneby, Sweden (Firefighting foam)</strong><br>
+      Firefighting foams used near an aviation site contaminated municipal wells in Ronneby. Roughly one-third of the town was affected. Blood tests revealed extremely high PFAS levels compared to other Swedish populations, driven mainly by foam-related PFOA and PFOS (Bonato et al. 5).</p>
+      <p>This case highlighted the risks of long-term firefighting foam use at airports and military bases.</p>`
+    };
+
+    const caseTabs = document.querySelectorAll('#caseTabs .tab-btn');
+    const casePanel = document.getElementById('casePanel');
+    caseTabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        caseTabs.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const key = btn.dataset.case;
+        casePanel.innerHTML = caseTexts[key] || '';
+      });
+    });
+
+    // Tech tabs
+    const techTexts = {
+      nanofilter: `<p><strong>Dual-functional nanofiltration membrane</strong><br>
+      Uses carbon nanotubes embedded in a ceramic matrix to capture PFOA and other PFAS. In lab tests, removal was around 90–99% with high water throughput and good anti-fouling properties.</p>
+      <p>Best suited to advanced treatment facilities due to cost and complexity.</p>`,
+      gac: `<p><strong>Granular activated carbon (GAC)</strong><br>
+      GAC filters are already used in some drinking-water plants. PFAS adsorb to the carbon, which must be replaced or regenerated periodically.</p>
+      <p>Effective for many PFAS, but performance varies by chain length and filter design.</p>`,
+      ro: `<p><strong>Reverse osmosis (RO)</strong><br>
+      RO pushes water through a semi-permeable membrane, rejecting most PFAS along with many other contaminants. It is highly effective but can be energy-intensive and produces a concentrated waste stream that still needs safe disposal.</p>`
+    };
+
+    const techTabs = document.querySelectorAll('#techTabs .tab-btn');
+    const techPanel = document.getElementById('techPanel');
+    techTabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        techTabs.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const key = btn.dataset.tech;
+        techPanel.innerHTML = techTexts[key] || '';
+      });
+    });
+
+    // Who pays slider
+    const paySlider = document.getElementById('paySlider');
+    const payOutput = document.getElementById('payOutput');
+
+    function updatePay() {
+      const v = Number(paySlider.value);
+      let text = '';
+      if (v <= 20) {
+        text = 'At this setting, utilities and taxpayers shoulder most of the cost, while polluting industries contribute little. Communities end up paying for damage they did not cause.';
+      } else if (v <= 60) {
+        text = 'At this setting, costs are shared: utilities upgrade treatment, governments help fund infrastructure, and industries contribute significantly under “polluter pays” principles.';
+      } else {
+        text = 'At this setting, polluting industries cover most cleanup costs. This aligns with environmental justice goals but requires strong regulation and legal enforcement.';
+      }
+      payOutput.textContent = text;
+    }
+    paySlider.addEventListener('input', updatePay);
+    updatePay();
+
+    // Action plan
+    const actionChecks = document.querySelectorAll('.action-check');
+    const actionSummary = document.getElementById('actionSummary');
+
+    function updateActionSummary() {
+      const chosen = Array.from(actionChecks).filter(ch => ch.checked).length;
+      if (chosen === 0) {
+        actionSummary.textContent = 'Choose actions above to build a simple, realistic PFAS action plan.';
+      } else if (chosen === 1) {
+        actionSummary.textContent = 'Nice start! Even one change can reduce exposure a bit. Try to commit to at least one more action.';
+      } else if (chosen <= 3) {
+        actionSummary.textContent = 'Great — you’ve picked ' + chosen + ' actions. Combined, they can meaningfully reduce your exposure and support broader change.';
+      } else {
+        actionSummary.textContent = 'Amazing! You selected multiple actions. If more people did this, PFAS pressure on communities would drop significantly.';
+      }
+    }
+    actionChecks.forEach(ch => ch.addEventListener('change', updateActionSummary));
+
+    // Scroll behavior: progress, nav show, back-to-top, scrollspy
+    const scrollProgress = document.getElementById('scrollProgress');
+    const navbar = document.getElementById('navbar');
+    const backToTop = document.getElementById('backToTop');
+    const sections = document.querySelectorAll('main section');
+    const navLinks = document.querySelectorAll('nav a');
+
+    function onScroll() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      scrollProgress.style.width = progress + '%';
+
+      if (scrollTop > window.innerHeight * 0.3) {
+        navbar.classList.add('visible');
+        backToTop.classList.add('visible');
+      } else {
+        navbar.classList.remove('visible');
+        backToTop.classList.remove('visible');
+      }
+
+      // Scrollspy
+      let currentId = null;
+      sections.forEach(sec => {
+        const rect = sec.getBoundingClientRect();
+        if (rect.top <= 120 && rect.bottom >= 120) {
+          currentId = sec.id;
+        }
+      }); 
+      navLinks.forEach(link => {
+        link.classList.toggle('active-link', link.getAttribute('href') === '#' + currentId);
+      });
+    }
+
+    window.addEventListener('scroll', onScroll);
+    onScroll();
+
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
